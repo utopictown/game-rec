@@ -75,13 +75,23 @@ def recommend_games(game_title, df, cosine_sim, indices, top_n=6):
     
     return recommendations
 
+@st.cache_data
+def get_game_options(df):
+    """Mendapatkan daftar game untuk selectbox dengan caching"""
+    if df is None:
+        return []
+    # Menggunakan sample yang konsisten dengan seed
+    return df['name'].sample(10, random_state=42).tolist()
+
 def main():
     df = load_data()
     cosine_sim, indices = create_recommendation_model(df)
 
     st.title("🎮 Rekomendasi Game Steam")
 
-    pilihan = st.selectbox("Pilih game favoritmu:", df['name'].sample(10).tolist())
+    # Menggunakan fungsi cached untuk mendapatkan opsi yang konsisten
+    game_options = get_game_options(df)
+    pilihan = st.selectbox("Pilih game favoritmu:", game_options)
 
     if st.button("Rekomendasikan Game Serupa"):
         hasil = recommend_games(pilihan, df, cosine_sim, indices)
